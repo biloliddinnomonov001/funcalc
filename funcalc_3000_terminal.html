@@ -1,0 +1,272 @@
+
+<style>
+  .term { background: #0d0d0d; border-radius: 10px; font-family: 'Courier New', monospace; font-size: 13px; color: #e0e0e0; padding: 0; overflow: hidden; }
+  .titlebar { background: #2a2a2a; padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #ffbd2e; } .dot.g { background: #28c840; }
+  .title-text { color: #888; font-size: 12px; margin-left: auto; margin-right: auto; }
+  .body { padding: 16px 18px; line-height: 1.6; }
+  .cyan { color: #00d7ff; } .magenta { color: #ff79c6; } .green { color: #50fa7b; }
+  .yellow { color: #f1fa8c; } .blue { color: #8be9fd; } .red { color: #ff5555; }
+  .white { color: #f8f8f2; } .bold { font-weight: bold; } .dim { color: #888; }
+  .sep { color: #00d7ff; }
+  .result-box { border: 1px solid #50fa7b; border-radius: 4px; padding: 8px 12px; margin: 8px 0; background: rgba(80,250,123,0.05); }
+  .input-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+  .prompt-sym { color: #f1fa8c; font-weight: bold; }
+  input.term-input { background: transparent; border: none; border-bottom: 1px solid #555; color: #f8f8f2; font-family: 'Courier New', monospace; font-size: 13px; outline: none; width: 160px; padding: 2px 4px; }
+  input.term-input:focus { border-bottom-color: #00d7ff; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  button.op-btn { background: #1e1e2e; border: 1px solid #444; color: #f1fa8c; font-family: 'Courier New', monospace; font-size: 13px; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+  button.op-btn:hover { background: #2a2a3e; border-color: #00d7ff; }
+  button.op-btn.active { background: #2a3a2a; border-color: #50fa7b; }
+  .answer { font-size: 22px; font-weight: bold; color: #50fa7b; }
+  .comment { color: #ff79c6; margin-top: 4px; font-style: italic; }
+  .history-line { color: #aaa; font-size: 12px; margin: 2px 0; }
+  .history-line span { color: #50fa7b; }
+  .tab-row { display: flex; gap: 0; margin-bottom: 0; }
+  .tab { padding: 6px 14px; cursor: pointer; font-size: 12px; color: #888; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab.active { color: #00d7ff; border-bottom-color: #00d7ff; }
+  .panel { display: none; } .panel.active { display: block; }
+</style>
+
+<div class="term">
+  <div class="titlebar">
+    <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    <span class="title-text">FunCalc 3000 — python3 calculator.py</span>
+  </div>
+  <div class="body">
+    <pre class="cyan bold" style="margin:0 0 4px;line-height:1.2;font-size:11px">
+  ___          ___      _
+ | __|_  _ _ _ / __|__ _| |__
+ | _|| || | ' \ (__/ _` | / /
+ |_|  \_,_|_||_\___\__,_|_\_\
+   ____  ___   ___   ___
+  |__ / / _ \ / _ \ / _ \
+   |_ \| (_) | (_) | (_) |
+  |___/ \___/ \___/ \___/</pre>
+    <div class="magenta bold" style="margin-bottom:8px">  Welcome to the most FUN calculator in the universe!</div>
+    <div class="sep">──────────────────────────────────────────────</div>
+
+    <div class="tab-row" style="margin-top:10px">
+      <div class="tab active" onclick="switchTab('basic')">➕ Basic</div>
+      <div class="tab" onclick="switchTab('special')">🔬 Special</div>
+      <div class="tab" onclick="switchTab('expr')">📝 Expression</div>
+      <div class="tab" onclick="switchTab('history')">📜 History</div>
+    </div>
+
+    <div id="panel-basic" class="panel active" style="margin-top:10px">
+      <div class="dim">  Enter two numbers and pick an operator:</div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="yellow">  a =</span>
+        <input class="term-input" id="numA" type="number" value="42" style="width:80px">
+        <span class="yellow">b =</span>
+        <input class="term-input" id="numB" type="number" value="7" style="width:80px">
+      </div>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="op-btn active" onclick="pickOp(this,'+')" >+</button>
+        <button class="op-btn" onclick="pickOp(this,'-')">−</button>
+        <button class="op-btn" onclick="pickOp(this,'*')">×</button>
+        <button class="op-btn" onclick="pickOp(this,'/')">÷</button>
+        <button class="op-btn" onclick="pickOp(this,'**')">x^y</button>
+        <button class="op-btn" onclick="pickOp(this,'%')">mod</button>
+        <button class="op-btn" onclick="pickOp(this,'//')">floor÷</button>
+        <button class="op-btn" style="background:#1a2a1a;border-color:#50fa7b;color:#50fa7b" onclick="calcBasic()">= Calculate!</button>
+      </div>
+      <div id="basic-result" style="display:none" class="result-box">
+        <div class="white" id="basic-expr"></div>
+        <div class="answer" id="basic-ans"></div>
+        <div class="comment" id="basic-comment"></div>
+      </div>
+    </div>
+
+    <div id="panel-special" class="panel" style="margin-top:10px">
+      <div class="dim">  Pick a function and enter a value:</div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="op-btn active" onclick="pickFn(this,'sqrt')">√ sqrt</button>
+        <button class="op-btn" onclick="pickFn(this,'abs')">|x| abs</button>
+        <button class="op-btn" onclick="pickFn(this,'sin')">sin°</button>
+        <button class="op-btn" onclick="pickFn(this,'cos')">cos°</button>
+        <button class="op-btn" onclick="pickFn(this,'tan')">tan°</button>
+        <button class="op-btn" onclick="pickFn(this,'log')">log₁₀</button>
+        <button class="op-btn" onclick="pickFn(this,'ln')">ln</button>
+        <button class="op-btn" onclick="pickFn(this,'ceil')">⌈ceil⌉</button>
+        <button class="op-btn" onclick="pickFn(this,'floor')">⌊floor⌋</button>
+        <button class="op-btn" onclick="pickFn(this,'fact')">n!</button>
+      </div>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+        <span class="yellow">  x =</span>
+        <input class="term-input" id="numFn" type="number" value="16" style="width:100px">
+        <button class="op-btn" style="background:#1a2a1a;border-color:#50fa7b;color:#50fa7b" onclick="calcSpecial()">= Go!</button>
+      </div>
+      <div id="special-result" style="display:none" class="result-box">
+        <div class="white" id="special-expr"></div>
+        <div class="answer" id="special-ans"></div>
+        <div class="comment" id="special-comment"></div>
+      </div>
+    </div>
+
+    <div id="panel-expr" class="panel" style="margin-top:10px">
+      <div class="dim">  Type any Python math expression (math module available):</div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="prompt-sym">  &gt;&gt;&gt;</span>
+        <input class="term-input" id="exprInput" type="text" value="(3 + 5) * 7" style="width:220px" onkeydown="if(event.key==='Enter')calcExpr()">
+        <button class="op-btn" style="background:#1a2a1a;border-color:#50fa7b;color:#50fa7b" onclick="calcExpr()">Run!</button>
+      </div>
+      <div class="dim" style="margin-top:6px;font-size:11px">
+        Try: &nbsp;<span class="yellow">math.pi * 5**2</span> &nbsp;|&nbsp; <span class="yellow">2**32</span> &nbsp;|&nbsp; <span class="yellow">math.factorial(10)</span>
+      </div>
+      <div id="expr-result" style="display:none" class="result-box">
+        <div class="white" id="expr-line"></div>
+        <div class="answer" id="expr-ans"></div>
+        <div class="comment" id="expr-comment"></div>
+      </div>
+    </div>
+
+    <div id="panel-history" class="panel" style="margin-top:10px">
+      <div class="dim">  📜 Recent calculations:</div>
+      <div id="hist-list" style="margin-top:8px;min-height:60px">
+        <div class="dim" style="font-size:12px;font-style:italic">  (no calculations yet — go crunch some numbers!)</div>
+      </div>
+      <button class="op-btn" style="margin-top:10px;color:#ff5555;border-color:#ff5555" onclick="clearHistory()">🧹 Clear history</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PRAISE = ["🎯 Nailed it!","🔥 You're on fire!","💡 Big brain time!","🚀 To infinity and beyond!","🎊 Magnificent!","✨ Spectacular!","🦄 Magical!","🍕 Even better than pizza!","🎸 Rock and roll!","🌈 Rainbows everywhere!","🏆 Champion move!"];
+const ZERO_DIV = ["💥 THE UNIVERSE IMPLODED (divide by zero detected)","🕳️  You just created a black hole. Nice.","🤯 Math.exe has stopped working","🚨 ERROR: Reality not found (division by zero)"];
+const BIG_NUM = ["📏 That's a BIG number. Are you sure you're okay?","🔭 Even astronomers are impressed.","🤑 You're basically a trillionaire."];
+const NEGATIVE = ["📉 Ooh, going negative — dramatic!","🕶️  Cool and below zero.","🥶 Brr, that's a cold result."];
+
+let history = [];
+let currentOp = '+';
+let currentFn = 'sqrt';
+
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function comment(r) {
+  if (r === 0) return "🫙 Zero. The void. Nothing. Zen.";
+  if (!isFinite(r)) return "♾️  Infinity unlocked! The math gods are pleased.";
+  if (isNaN(r)) return "🤷 Not a Number. Relatable.";
+  if (Math.abs(r) > 1e9) return rand(BIG_NUM);
+  if (r < 0) return rand(NEGATIVE);
+  return rand(PRAISE);
+}
+
+function fmt(n) {
+  if (typeof n !== 'number') return String(n);
+  if (!isFinite(n)) return String(n);
+  if (Number.isInteger(n)) return n.toLocaleString();
+  return parseFloat(n.toPrecision(10)).toLocaleString(undefined, {maximumFractionDigits: 10});
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['basic','special','expr','history'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+function pickOp(btn, op) {
+  document.querySelectorAll('#panel-basic .op-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentOp = op;
+}
+
+function pickFn(btn, fn) {
+  document.querySelectorAll('#panel-special .op-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFn = fn;
+}
+
+function showResult(exprEl, ansEl, commentEl, boxEl, expr, result, errMsg) {
+  boxEl.style.display = 'block';
+  if (errMsg) {
+    exprEl.textContent = expr;
+    ansEl.textContent = '';
+    commentEl.textContent = errMsg;
+    return;
+  }
+  const f = fmt(result);
+  exprEl.textContent = expr + ' =';
+  ansEl.textContent = f;
+  commentEl.textContent = comment(result);
+  addHistory(expr + ' = ' + f);
+}
+
+function addHistory(entry) {
+  history.unshift(entry);
+  if (history.length > 15) history.pop();
+  const list = document.getElementById('hist-list');
+  list.innerHTML = history.map(h => `<div class="history-line">&nbsp;&nbsp;<span>${h}</span></div>`).join('');
+}
+
+function clearHistory() {
+  history = [];
+  document.getElementById('hist-list').innerHTML = '<div class="dim" style="font-size:12px;font-style:italic">  (history cleared!)</div>';
+}
+
+function calcBasic() {
+  const a = parseFloat(document.getElementById('numA').value);
+  const b = parseFloat(document.getElementById('numB').value);
+  const op = currentOp;
+  let result, err;
+  try {
+    if (op === '+') result = a + b;
+    else if (op === '-') result = a - b;
+    else if (op === '*') result = a * b;
+    else if (op === '/') { if (b === 0) throw new Error('zero'); result = a / b; }
+    else if (op === '**') result = Math.pow(a, b);
+    else if (op === '%') { if (b === 0) throw new Error('zero'); result = a % b; }
+    else if (op === '//') { if (b === 0) throw new Error('zero'); result = Math.trunc(a / b); }
+  } catch(e) {
+    showResult(document.getElementById('basic-expr'), document.getElementById('basic-ans'), document.getElementById('basic-comment'), document.getElementById('basic-result'), `${a} ${op} ${b}`, null, rand(ZERO_DIV));
+    return;
+  }
+  showResult(document.getElementById('basic-expr'), document.getElementById('basic-ans'), document.getElementById('basic-comment'), document.getElementById('basic-result'), `${a} ${op} ${b}`, result);
+}
+
+function calcSpecial() {
+  const x = parseFloat(document.getElementById('numFn').value);
+  const fn = currentFn;
+  let result, err;
+  try {
+    if (fn === 'sqrt') result = Math.sqrt(x);
+    else if (fn === 'abs') result = Math.abs(x);
+    else if (fn === 'sin') result = Math.sin(x * Math.PI / 180);
+    else if (fn === 'cos') result = Math.cos(x * Math.PI / 180);
+    else if (fn === 'tan') result = Math.tan(x * Math.PI / 180);
+    else if (fn === 'log') result = Math.log10(x);
+    else if (fn === 'ln') result = Math.log(x);
+    else if (fn === 'ceil') result = Math.ceil(x);
+    else if (fn === 'floor') result = Math.floor(x);
+    else if (fn === 'fact') {
+      const n = Math.round(x);
+      if (n < 0 || n > 170) throw new Error('out of range');
+      let f = 1; for (let i=2;i<=n;i++) f *= i; result = f;
+    }
+    if (isNaN(result)) throw new Error('domain error');
+  } catch(e) {
+    showResult(document.getElementById('special-expr'), document.getElementById('special-ans'), document.getElementById('special-comment'), document.getElementById('special-result'), `${fn}(${x})`, null, '🤕 Math domain error: ' + e.message);
+    return;
+  }
+  showResult(document.getElementById('special-expr'), document.getElementById('special-ans'), document.getElementById('special-comment'), document.getElementById('special-result'), `${fn}(${x})`, result);
+}
+
+function calcExpr() {
+  const raw = document.getElementById('exprInput').value.trim();
+  let result, err;
+  try {
+    const mathProxy = {PI: Math.PI, E: Math.E, sqrt: Math.sqrt, abs: Math.abs, sin: x => Math.sin(x), cos: x => Math.cos(x), tan: x => Math.tan(x), log10: Math.log10, log: Math.log, ceil: Math.ceil, floor: Math.floor, factorial: n => { let f=1; for(let i=2;i<=n;i++) f*=i; return f; }, pow: Math.pow, round: Math.round};
+    const safeExpr = raw.replace(/math\./g, '__m.');
+    const fn = new Function('__m', `"use strict"; return (${safeExpr})`);
+    result = fn(mathProxy);
+  } catch(e) {
+    showResult(document.getElementById('expr-line'), document.getElementById('expr-ans'), document.getElementById('expr-comment'), document.getElementById('expr-result'), raw, null, '❌ Error: ' + e.message);
+    return;
+  }
+  showResult(document.getElementById('expr-line'), document.getElementById('expr-ans'), document.getElementById('expr-comment'), document.getElementById('expr-result'), raw, result);
+}
+</script>
